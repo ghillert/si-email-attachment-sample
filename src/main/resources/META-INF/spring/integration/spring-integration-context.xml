@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:int-mail="http://www.springframework.org/schema/integration/mail"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:int-file="http://www.springframework.org/schema/integration/file"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/mail http://www.springframework.org/schema/integration/mail/spring-integration-mail-2.1.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration-2.1.xsd
+		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file-2.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+    <int-mail:inbound-channel-adapter should-delete-messages="no" channel="inboundChannel" java-mail-properties="javaMailProperties" 
+    store-uri="imap://test:test@localhost:143/INBOX" should-mark-messages-as-read="false">
+    <int:poller fixed-rate="50000"/>
+    </int-mail:inbound-channel-adapter>
+
+    <util:properties id="javaMailProperties">
+		<prop key="mail.store.protocol">imap</prop>
+		<prop key="mail.debug">false</prop>
+	</util:properties>
+	
+    <int:transformer input-channel="inboundChannel" ref="transformer" method="transformit" output-channel="outputChannel"/>                    
+    
+    <int:channel id="inboundChannel"/>
+    <int:channel id="outputChannel"/>
+    
+    <bean id="transformer" class="org.springintegration.demo.service.EmailTransformer"/>
+    
+    <int-file:outbound-channel-adapter auto-create-directory="true" channel="outputChannel" directory="target/out"/>
+    
+</beans>
